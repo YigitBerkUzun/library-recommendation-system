@@ -22,7 +22,21 @@ export class ApiStack extends cdk.Stack{
         const helloLambda=new NodejsFunction(this,'HelloWorldFunction' , {
             runtime: lambda.Runtime.NODEJS_20_X,
             handler:'handler',
+            entry: path.join(__dirname, '../lambda/hello-world/index.ts'),
+            timeout:cdk.Duration.seconds(10),
+            memorySize:256,
+            architecture: lambda.Architecture.ARM_64,
+
         });
+        const helloResource =this.api.root.addResource('hello');
+        helloResource.addMethod('GET',new apigateway.LambdaIntegration(helloLambda))
+
+        new cdk.CfnOutput(this, 'ApiUrl'{
+            value:this.api.url,
+            description:'API Gateway URL'
+
+        });
+
 
     }
 }
