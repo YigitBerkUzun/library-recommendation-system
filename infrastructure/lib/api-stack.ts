@@ -47,6 +47,9 @@ export class ApiStack extends cdk.Stack {
       timeout: cdk.Duration.seconds(10),
       memorySize: 256,
       architecture: lambda.Architecture.ARM_64,
+      environment:{
+        BOOKS_TABLE_NAME:props.booksTable.tableName,
+      }
     });
 
     // Grant permissions to read from DynamoDB tables
@@ -70,6 +73,71 @@ export class ApiStack extends cdk.Stack {
       authorizationType: apigateway.AuthorizationType.NONE,
     });
 
+    const getReadingListsLambda = new NodejsFunction(this, 'GetReadingListsFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'handler',
+      entry: path.join(__dirname, '../lambda/get-reading-lists/index.ts'),
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 256,
+      architecture: lambda.Architecture.ARM_64,
+      environment: {
+        READING_LISTS_TABLE_NAME: props.readingListsTable.tableName,
+      },
+    });
+
+    const createReadingListLambda = new NodejsFunction(this, 'CreateReadingListFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'handler',
+      entry: path.join(__dirname, '../lambda/create-reading-lists/index.ts'),
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 256,
+      architecture: lambda.Architecture.ARM_64,
+      environment: {
+        READING_LISTS_TABLE_NAME: props.readingListsTable.tableName,
+      },
+    });
+
+    const updateReadingListLambda = new NodejsFunction(this, 'UpdateReadingListFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'handler',
+      entry: path.join(__dirname, '../lambda/update-reading-lists/index.ts'),
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 256,
+      architecture: lambda.Architecture.ARM_64,
+      environment: {
+        READING_LISTS_TABLE_NAME: props.readingListsTable.tableName,
+      },
+    });
+
+    const deleteReadingListLambda = new NodejsFunction(this, 'DeleteReadingListFunction', {
+      runtime: lambda.Runtime.NODEJS_20_X,
+      handler: 'handler',
+      entry: path.join(__dirname, '../lambda/delete-reading-lists/index.ts'),
+      timeout: cdk.Duration.seconds(10),
+      memorySize: 256,
+      architecture: lambda.Architecture.ARM_64,
+      environment: {
+        READING_LISTS_TABLE_NAME: props.readingListsTable.tableName,
+      },
+    });
+
+    // Grant DynamoDB permissions
+    props.readingListsTable.grantReadData(getReadingListsLambda);
+    props.readingListsTable.grantWriteData(createReadingListLambda);
+    props.readingListsTable.grantReadWriteData(updateReadingListLambda);
+    props.readingListsTable.grantWriteData(deleteReadingListLambda);
+
+     // API Resources for Reading Lists
+    const readingListsResource = this.api.root.addResource('reading-lists');
+    readingListsResource.addMethod('GET', new apigateway.LambdaIntegration(getReadingListsLambda));
+    readingListsResource.addMethod('POST', new apigateway.LambdaIntegration(createReadingListLambda));
+
+    const readingListByIdResource = readingListsResource.addResource('{id}');
+    readingListByIdResource.addMethod('PUT', new apigateway.LambdaIntegration(updateReadingListLambda));
+    readingListByIdResource.addMethod(
+      'DELETE',
+      new apigateway.LambdaIntegration(deleteReadingListLambda)
+    );
     new cdk.CfnOutput(this, 'ApiUrl', {
       value: this.api.url,
       description: 'API Gateway URL',
