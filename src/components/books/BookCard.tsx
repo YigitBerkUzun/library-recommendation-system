@@ -30,7 +30,7 @@ export function BookCard({ book }: BookCardProps) {
     >
       <div className="relative overflow-hidden">
         <img
-          src={book.coverImage}
+          src={`https://picsum.photos/seed/${book.id}/200/300`}
           alt={book.title}
           className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-700"
           onError={(e) => {

@@ -8,7 +8,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "cdk": "cdk"
+    "cdk": "cdk",
+    "load-books": "ts-node scripts/load-books.ts"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.159",
