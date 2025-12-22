@@ -25,12 +25,13 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
 
   try {
     const body: UpdateReadingListRequest = JSON.parse(event.body || '{}');
+    const listId = event.pathParameters?.id;
 
-    if (!body.listId) {
+    if (!listId) {
       return {
         statusCode: 400,
         headers: CORS_HEADERS,
-        body: JSON.stringify({ error: 'List ID is required' }),
+        body: JSON.stringify({ error: 'List ID is required in path' }),
       };
     }
 
@@ -39,8 +40,8 @@ export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayPr
     const command = new UpdateCommand({
       TableName: process.env.READING_LISTS_TABLE_NAME,
       Key: {
+        id: listId,
         userId: userId,
-        id: body.listId,
       },
       UpdateExpression: `
         SET #name = :name,
